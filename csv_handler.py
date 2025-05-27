@@ -1,24 +1,43 @@
-
-
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog
+import csv
 
-def import_file():
-    file_path = filedialog.askopenfilename(title="Select a file", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+def open_csv_file():
+    file_path = filedialog.askopenfilename(title="Open CSV File", filetypes=[("CSV files", "*.csv")])
     if file_path:
-        # Process the selected file (you can replace this with your own logic)
-        print("Selected file:", file_path)
+        display_csv_data(file_path)
 
-# Create the main Tkinter window
+def display_csv_data(file_path):
+    try:
+        with open(file_path, 'r', newline='') as file:
+            csv_reader = csv.reader(file)
+            header = next(csv_reader)  # Read the header row
+            tree.delete(*tree.get_children())  # Clear the current data
+
+            tree["columns"] = header
+            for col in header:
+                tree.heading(col, text=col)
+                tree.column(col, width=100)
+
+            for row in csv_reader:
+                tree.insert("", "end", values=row)
+
+            status_label.config(text=f"CSV file loaded: {file_path}")
+
+    except Exception as e:
+        status_label.config(text=f"Error: {str(e)}")
+
 root = tk.Tk()
-root.title("Import File Example")
+root.title("CSV File Viewer")
 
-# Create an "Import File" button
-import_button = tk.Button(root, text="Import File", command=import_file)
-import_button.pack(pady=100)
+open_button = tk.Button(root, text="Open CSV File", command=open_csv_file)
+open_button.pack(padx=20, pady=10)
 
-quit_button = tk.Button(root, text="Quit", command=root.destroy)
-quit_button.pack(pady=100)
+tree = ttk.Treeview(root, show="headings")
+tree.pack(padx=20, pady=20, fill="both", expand=True)
 
-# Run the Tkinter event loop
+status_label = tk.Label(root, text="", padx=20, pady=10)
+status_label.pack()
+
 root.mainloop()
